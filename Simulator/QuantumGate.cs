@@ -57,7 +57,7 @@ namespace Impedio.Simulation
 
         #region Default Gates
 
-        public static Matrix<Complex32> Identity = Matrix<Complex32>.Build.DenseIdentity(2);
+        public static QuantumGate Identity = new QuantumGate(Matrix<Complex32>.Build.DenseIdentity(2));
 
         #endregion
     }

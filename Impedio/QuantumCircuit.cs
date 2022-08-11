@@ -10,12 +10,14 @@ namespace Impedio
     public class QuantumCircuit
     {
         public int QubitCount { get; private set; }
-        Simulator sex;
+        Simulator simulator;
 
         public QuantumCircuit(int qubitCount)
         {
             QubitCount = qubitCount;
-            //Initalize simulator
+            simulator = new Simulator(qubitCount);
         }
+        
+        
     }
 }
