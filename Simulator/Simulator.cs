@@ -6,11 +6,12 @@ using System.Threading.Tasks;
 using MathNet.Numerics;
 using MathNet.Numerics.LinearAlgebra;
 
-namespace Simulator
+namespace Impedio.Simulation
 {
     public class Simulator
     {
         int qubitCount;
+        List<QuantumGate> gateList;
 
         public Simulator(int _qubitCount)
         {
@@ -19,8 +20,10 @@ namespace Simulator
                 throw new ArgumentOutOfRangeException();
             }
             qubitCount = _qubitCount;
+            gateList = new List<QuantumGate>();
         }
 
+        #region Gate Calculation
 
         //https://www.researchgate.net/publication/264003521_Efficient_algebraic_representation_of_quantum_circuits
         public async Task<Matrix<Complex32>> CalculateGateSliceAsync(QuantumGate gate, int qubitIndex)
@@ -101,5 +104,64 @@ namespace Simulator
 
             return sum;
         }
+
+        public async Task<Matrix<Complex32>> CalculateCiruitMatrix(IEnumerable<QuantumGateContext> gates)
+        {
+            //Calculate gate slices for all gates
+            var gateSliceTasks = new List<Task>();
+            
+            foreach(var gateContext in gates)
+            {
+                gateSliceTasks.Add(CalculateGateSliceAsync(gateContext.Gate, gateContext.Index));
+            }
+            await Task.WhenAll(gateSliceTasks);
+
+            var gateSlices = new List<Matrix<Complex32>>();
+            foreach(var task in gateSliceTasks)
+            {
+                gateSlices.Add(((Task<Matrix<Complex32>>)task).Result);
+            }
+
+            //Construct our final products matrix
+
+            var gateDismensions = await Task.Run(() => Math.ILogB(gateSlices.FirstOrDefault().RowCount));
+            var finalProduct = await Task.Run(() => Matrix<Complex32>.Build.SparseIdentity(gateDismensions));
+
+            //Multiply all the gate slices together
+            foreach (var gate in gateSlices)
+            {
+                await Task.Run(() => finalProduct = finalProduct * gate);
+            }
+
+            return finalProduct;
+        }
+
+        public async Task<Vector<Complex32>> CalculateStateVector(Matrix<Complex32> circuitMatrix)
+        {
+            //Initialize the state vector
+            var svArray = Enumerable.Repeat(new Complex32(0, 0), circuitMatrix.RowCount).ToArray();
+            svArray[0] = 1;
+            var stateVector = await Task.Run(() => Vector<Complex32>.Build.SparseOfArray(svArray));
+
+            //Multiply the sv with the circuit matrix and return the result
+            stateVector = circuitMatrix * stateVector;
+            return stateVector;
+        }
+
+        #endregion
+
+        #region Gate List Operations
+
+        public void AddGate(QuantumGate gate)
+        {
+            gateList.Add(gate);
+        }
+
+        public void ClearAllGates()
+        {
+            gateList.Clear();
+        }
+
+        #endregion
     }
 }
