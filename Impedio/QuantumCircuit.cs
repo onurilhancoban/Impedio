@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Impedio.Simulation;
+using MathNet.Numerics;
+using MathNet.Numerics.LinearAlgebra;
 
 namespace Impedio
 {
@@ -18,6 +20,16 @@ namespace Impedio
             simulator = new Simulator(qubitCount);
         }
         
+        public void ApplyGate(QuantumGate gate, int index)
+        {
+            var gateContext = new QuantumGateContext(gate, index);
+            simulator.AddGate(gateContext);
+        }
         
+        public async Task<Vector<Complex32>> SV_CALCULATE_DEBUG()
+        {
+            var cm = await simulator.CalculateCiruitMatrix();
+            return await simulator.CalculateStateVector(cm);
+        }
     }
 }

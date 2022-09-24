@@ -8,12 +8,12 @@ namespace Impedio.Simulation
 {
     public class QuantumGateControl
     {
-        public bool Type { get; }
+        public bool Type { get; } //Positive if false, Negative if true
         public int Index { get; }
 
         public QuantumGateControl(bool type, int index)
         {
-            if(index < 1)
+            if(index < 0)
             {
                 throw new ArgumentOutOfRangeException();
             }
