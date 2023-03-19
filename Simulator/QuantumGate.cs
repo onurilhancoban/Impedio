@@ -9,7 +9,7 @@ using Impedio.Simulation;
 
 namespace Impedio
 {
-    public class QuantumGate
+    public partial class QuantumGate
     {
         public Matrix<Complex32> GateMatrix { get; }
         public List<QuantumGateControl> ControlList { get; }
@@ -27,19 +27,13 @@ namespace Impedio
             }
         }
 
-        public QuantumGate(Matrix<Complex32> matrix)
+        private QuantumGate(Matrix<Complex32> matrix)
         {
             //Check if the matrix is a square matrix
             if(!(matrix.RowCount == matrix.ColumnCount))
             {
                 throw new ArgumentException("The gate matrix must be a square matrix.");
             }
-
-            //Check if the matrix is unitary
-            /*if(!(matrix * matrix.ConjugateTranspose() == Matrix<Complex32>.Build.SparseIdentity(matrix.RowCount, matrix.ColumnCount)))
-            {
-                throw new ArgumentException("The gate matrix must be unitary");
-            }*/
 
             GateMatrix = matrix;
             ControlList = new List<QuantumGateControl>();
@@ -53,6 +47,11 @@ namespace Impedio
 
         public QuantumGate WithControl(int controlIndex, bool controlType = false)
         {
+            if(controlIndex < 0 )
+            {
+                throw new ArgumentOutOfRangeException();
+            }
+
             if(ControlList.Any(s => s.Index == controlIndex))
             {
                 throw new ArgumentOutOfRangeException("There is already a control on that index!");
@@ -62,23 +61,5 @@ namespace Impedio
             newGate.ControlList.Add(new QuantumGateControl(controlType, controlIndex));
             return newGate;
         }
-
-        #region Default Gates
-
-        public static QuantumGate Identity = new QuantumGate(Matrix<Complex32>.Build.DenseIdentity(2));
-
-        public static QuantumGate PaulliX = new QuantumGate(Matrix<Complex32>.Build.DenseOfArray(new Complex32[2, 2]
-        {
-            { 0, 1 },
-            { 1, 0 }
-        }));
-
-        public static QuantumGate Hadamard = new QuantumGate(Matrix<Complex32>.Build.DenseOfArray(new Complex32[2, 2]
-        {
-            { new Complex32((float)Constants.Sqrt1Over2, 0), new Complex32((float)Constants.Sqrt1Over2, 0) },
-            { new Complex32((float)Constants.Sqrt1Over2, 0), new Complex32(-(float)Constants.Sqrt1Over2, 0) }
-        }));
-
-        #endregion
     }
 }

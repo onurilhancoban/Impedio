@@ -16,12 +16,22 @@ namespace Impedio
 
         public QuantumCircuit(int qubitCount)
         {
+            if(qubitCount < 0)
+            {
+                throw new ArgumentOutOfRangeException();
+            }
+
             QubitCount = qubitCount;
             simulator = new Simulator(qubitCount);
         }
         
         public void ApplyGate(QuantumGate gate, int index)
         {
+            if(index < 0 || index > QubitCount)
+            {
+                throw new ArgumentOutOfRangeException();
+            }
+
             var gateContext = new QuantumGateContext(gate, index);
             simulator.AddGate(gateContext);
         }

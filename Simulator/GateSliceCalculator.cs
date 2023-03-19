@@ -30,8 +30,6 @@ namespace Impedio.Simulation
             { 0, 0 },
             { 0, 1 }
         }); 
-
-        //Never not useful
         public static Matrix<Complex32> Identity = Matrix<Complex32>.Build.DenseIdentity(2);
 
         public static async Task<Matrix<Complex32>> EndlessPainAndSuffering(int controlIndex, int totalTerms, int selectedTerm, bool controlType)
@@ -154,6 +152,11 @@ namespace Impedio.Simulation
 
         public async Task<Matrix<Complex32>> CalculateGateSliceAsync(QuantumGateContext context)
         { 
+            if(context.Gate.ControlList.Any(s => s.Index == context.Index))
+            {
+                throw new ArgumentOutOfRangeException();
+            }
+
             if(context.Gate.HasControls)
             {
                 return await CalculateControlledGateAsync(context);
